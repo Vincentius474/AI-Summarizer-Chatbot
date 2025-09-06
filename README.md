@@ -1,4 +1,4 @@
-# AI Lecture Assistant
+# AI Summarizer Chatbot
 
 An interactive **Streamlit** app that lets you upload lecture slide PDFs, automatically extract text and images, summarize slide contents with **transformer-based models**, and perform **question answering** using FAISS-powered semantic search.
 
@@ -41,5 +41,5 @@ An interactive **Streamlit** app that lets you upload lecture slide PDFs, automa
 
 1. **Clone the repository**  
    ```bash
-   git clone https://github.com/yourusername/ai-lecture-slide-assistant.git
-   cd ai-lecture-slide-assistant
+   git clone https://github.com/yourusername/ai-summarizer-chatbot.git
+   cd ai-summarizer-chatbot
