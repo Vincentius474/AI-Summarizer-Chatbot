@@ -7,9 +7,9 @@ import streamlit as st
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer
 
-"""
-Load models
-"""
+# -----------------
+# Load models
+# -----------------
 @st.cache_resource
 def load_summarizer():
     return pipeline("summarization", model="facebook/bart-large-cnn")
@@ -32,7 +32,7 @@ def extract_text_and_images(pdf_file):
         text = page.get_text("text")
 
         image_list = []
-        for img_index, img in enumerate(page.get_images(full=True)):
+        for _, img in enumerate(page.get_images(full=True)):
             xref = img[0]
             base_image = doc.extract_image(xref)
             img_bytes = base_image["image"]
@@ -51,7 +51,7 @@ def summarize_text(text):
     Summarization
     """
     if not text.strip():
-        return "No text found on this slide."
+        return "No text found on this slide/page."
     try:
         input_length = len(text.split())
         max_len = min(120, input_length + 20)
@@ -89,12 +89,12 @@ def answer_question(query, index, texts, k=3):
     except Exception as e:
         return f"Error generating answer: {e}"
 
-"""
-Streamlit User Interface
-"""
+# -------------------------
+# Streamlit User Interface
+# -------------------------
 st.set_page_config(page_title="AI Lecture Assistant", layout="wide")
 
-st.title("AI Lecture Slide Assistant")
+st.title("AI Lecture Assistant")
 st.write("Upload a PDF of lecture slides to get summaries, view images, and ask questions.")
 
 uploaded_file = st.file_uploader("Upload your PDF", type=["pdf"])
@@ -105,33 +105,35 @@ if uploaded_file:
 
     st.success(f"Extracted {len(slides)} slides.")
 
-    """ Sidebar navigation """
+    # Sidebar navigation 
     slide_nums = [s["page"] for s in slides]
-    selected_slide = st.sidebar.selectbox("Select Slide", slide_nums)
+    selected_slide = st.sidebar.selectbox("Select Slide/Page", slide_nums)
 
-    """ Display selected slide """
+    # Display selected slide 
     slide = slides[selected_slide - 1]
     st.subheader(f"Slide {slide['page']}")
 
-    """ Extracted text """
+    # Extracted text 
     st.write("### Extracted Text")
     st.text(slide["text"] if slide["text"] else "No text detected.")
 
-    """ AI summary """
+    # AI summary 
     st.write("### AI Summary")
     summary = summarize_text(slide["text"])
     st.info(summary)
 
-    """ Extracted images """
+    # Extracted images
     if slide["images"]:
         st.write("### Extracted Images")
         for idx, img in enumerate(slide["images"]):
-            resized_img = img.resize((400, 300))
+            # resized_img = img.resize((400, 300))
+            resized_img = img.copy()
+            resized_img.thumbnail((400, 300))
             st.image(resized_img, caption=f"Slide {slide['page']} - Image {idx+1}")
     else:
         st.write("No images detected on this slide.")
 
-    """ For summarizing the entire deck """
+    # For summarizing the entire deck 
     if st.button("Summarize Entire Deck"):
         with st.spinner("Summarizing all slides..."):
             all_summaries = [
@@ -142,8 +144,8 @@ if uploaded_file:
         for s in all_summaries:
             st.markdown(f"**Slide {s['page']}**: {s['summary']}")
 
-    """ Q & A Section """
-    st.write("### Ask Questions About the Slides")
+    # Q & A Section 
+    st.write("### Ask Questions About the Slides/Pages")
     if "faiss_index" not in st.session_state:
         with st.spinner("Building knowledge base..."):
             index, texts = build_faiss_index(slides)
@@ -151,7 +153,7 @@ if uploaded_file:
             st.session_state.texts = texts
         st.success("Knowledge base ready!")
 
-    query = st.text_input("Ask a question about the lecture:")
+    query = st.text_input("Ask a question about the copntent in the PDF uploaded:")
     if query:
         with st.spinner("Thinking..."):
             answer = answer_question(query, st.session_state.faiss_index, st.session_state.texts)
