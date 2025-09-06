@@ -1,0 +1,8 @@
+streamlit
+pymupdf
+torch
+transformers
+sentence-transformers
+faiss-cpu
+pdfplumber
+Pillow
